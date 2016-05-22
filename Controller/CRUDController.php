@@ -23,6 +23,7 @@ use Sonata\AdminBundle\Util\AdminObjectAclManipulator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Form\Form;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -113,6 +114,108 @@ class CRUDController extends Controller
             'datagrid' => $datagrid,
             'csrf_token' => $this->getCsrfToken('sonata.batch'),
         ), null, $request);
+    }
+
+    /**
+     * Batch modify different entities.
+     *
+     * @param ProxyQueryInterface $query
+     *
+     * @return Response
+     *
+     * @throws AccessDeniedException If access is not granted
+     */
+    public function batchActionEdit(ProxyQueryInterface $query)
+    {
+        $request = $this->getRequest();
+
+        $this->admin->checkAccess('edit');
+
+        if ($data = json_decode($request->get('data'), true)) {
+        } else {
+            $data = $request->request->all();
+        }
+
+        // the key used to lookup the template
+        $templateKey = 'batch_edit';
+
+        $object = $this->admin->getNewInstance();
+
+        /** @var FormInterface $form */
+        $form = $this->admin->getBatchForm();
+        $form->setData($object);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            $isFormValid = $form->isValid();
+
+            if ($isFormValid) {
+                $this->admin->checkAccess('batch_edit', $object);
+
+                // TODO: Submit ohne Ausüfhren
+                // TODO: Überschreiben, Erweitern
+                // TODO: Validate, Batch save
+                try {
+                    $object = $this->admin->update($object);
+
+                    if ($this->isXmlHttpRequest()) {
+                        return $this->renderJson(array(
+                            'result' => 'ok',
+                            'objectId' => $this->admin->getNormalizedIdentifier($object),
+                            'objectName' => $this->escapeHtml($this->admin->toString($object)),
+                        ), 200, array());
+                    }
+
+                    $this->addFlash(
+                        'sonata_flash_success',
+                        $this->admin->trans(
+                            'flash_edit_success',
+                            array('%name%' => $this->escapeHtml($this->admin->toString($object))),
+                            'SonataAdminBundle'
+                        )
+                    );
+
+                    // redirect to edit mode
+                    return $this->redirectTo($object);
+                } catch (ModelManagerException $e) {
+                    $this->handleModelManagerException($e);
+
+                    $isFormValid = false;
+                } catch (LockException $e) {
+                    $this->addFlash('sonata_flash_error', $this->admin->trans('flash_lock_error', array(
+                        '%name%' => $this->escapeHtml($this->admin->toString($object)),
+                        '%link_start%' => '<a href="'.$this->admin->generateObjectUrl('edit', $object).'">',
+                        '%link_end%' => '</a>',
+                    ), 'SonataAdminBundle'));
+                }
+            }
+
+            // show an error message if the form failed validation
+            if (!$isFormValid) {
+                $this->addFlash(
+                    'sonata_flash_error',
+                    $this->admin->trans('flash_batch_edit_error', array(), 'SonataAdminBundle')
+                );
+            }
+        }
+
+        $datagrid = $this->admin->getDatagrid();
+        $formView = $datagrid->getForm()->createView();
+
+        $batchView = $form->createView();
+
+        // set the theme for the current Admin Form
+        $this->get('twig')->getExtension('form')->renderer->setTheme($batchView, $this->admin->getFormTheme());
+
+        return $this->render($this->admin->getTemplate($templateKey), array(
+            'action' => 'batch_edit',
+            'action_label' => $this->admin->trans($this->admin->getTranslationLabel('edit', 'action', 'batch')),
+            'datagrid' => $datagrid,
+            'form' => $formView,
+            'batchForm' => $batchView,
+            'data' => $data,
+            'csrf_token' => $this->getCsrfToken('sonata.batch'),
+        ), null);
     }
 
     /**

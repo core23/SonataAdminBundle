@@ -283,6 +283,11 @@ legend.sonata-ba-fieldset-collapsed-description + .sonata-ba-collapsed-fields {
     margin-bottom: 18px;
 }
 
+.sonata-ba-collapsed-fields > .sonata-ba-replace {
+    float: left;
+    margin-right: 10px;
+}
+
 .bordered-table tbody.ui-sortable tr {
     cursor: move;
 }

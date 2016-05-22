@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+- Added `AbstractAdmin::configureBatchFormFields` method for batch editing
+
 ## [3.2.0](https://github.com/sonata-project/SonataAdminBundle/compare/3.1.0...3.2.0) - 2016-06-04
 ### Added
 - Added new field type `email` on the list
