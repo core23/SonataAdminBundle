@@ -183,15 +183,12 @@ interface AdminExtensionInterface
     public function postRemove(AdminInterface $admin, $object);
 
     /*
-     * Get all action buttons for an action
+     * Defines the action menu for a page.
      *
-     * @param AdminInterface $admin
-     * @param array          $list
-     * @param string         $action
-     * @param mixed          $object
-     *
-     * @return array
+     * @param MenuItemInterface $menu
+     * @param string            $action
+     * @param mixed             $object
      */
     // TODO: Uncomment in next major release
-    // public function configureActionButtons(AdminInterface $admin, $list, $action, $object);
+    // public function configureActionMenu(MenuItemInterface $menu, $action, $object = null);
 }

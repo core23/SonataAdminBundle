@@ -2764,6 +2764,8 @@ abstract class AbstractAdmin implements AdminInterface, DomainObjectInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @deprecated since 3.x, will be replaced with configureActionMenu
      */
     public function configureActionButtons($action, $object = null)
     {
@@ -2809,6 +2811,8 @@ abstract class AbstractAdmin implements AdminInterface, DomainObjectInterface
     }
 
     /**
+     * @deprecated since 3.x, to be removed with 4.0.
+     *
      * @param string $action
      * @param mixed  $object
      *
@@ -2891,6 +2895,34 @@ abstract class AbstractAdmin implements AdminInterface, DomainObjectInterface
     /**
      * {@inheritdoc}
      */
+    public function getActionMenu($action, $object = null)
+    {
+        $menu = $this->menuFactory->createItem('root');
+        $menu->setChildrenAttribute('class', 'nav navbar-nav');
+        $menu->setExtra('translation_domain', $this->translationDomain);
+
+        // Prevents BC break with KnpMenuBundle v1.x
+        if (method_exists($menu, 'setCurrentUri')) {
+            $menu->setCurrentUri($this->getRequest()->getBaseUrl().$this->getRequest()->getPathInfo());
+        }
+
+        // NEXT_MAJOR: move default actions form getActionButtons to this method
+
+        $this->configureActionMenu($menu, $action, $object);
+
+        foreach ($this->getExtensions() as $extension) {
+            // TODO: remove method check in next major release
+            if (method_exists($extension, 'configureActionMenu')) {
+                $extension->configureActionMenu($this, $menu, $action, $object);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function configureFormFields(FormMapper $form)
     {
     }
@@ -2947,6 +2979,17 @@ abstract class AbstractAdmin implements AdminInterface, DomainObjectInterface
      * @deprecated Use configureTabMenu instead
      */
     protected function configureSideMenu(MenuItemInterface $menu, $action, AdminInterface $childAdmin = null)
+    {
+    }
+
+    /**
+     * Defines the action menu for a page.
+     *
+     * @param MenuItemInterface $menu
+     * @param string            $action
+     * @param mixed             $object
+     */
+    protected function configureActionMenu(MenuItemInterface $menu, $action, $object = null)
     {
     }
 

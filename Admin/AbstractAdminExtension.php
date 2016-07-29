@@ -186,4 +186,15 @@ abstract class AbstractAdminExtension implements AdminExtensionInterface
     {
         return $list;
     }
+
+    /**
+     * Defines the action menu for a page.
+     *
+     * @param MenuItemInterface $menu
+     * @param string            $action
+     * @param mixed             $object
+     */
+    public function configureActionMenu(MenuItemInterface $menu, $action, $object = null)
+    {
+    }
 }

@@ -37,6 +37,13 @@ file that was distributed with this source code.
     </ul>
 {% endmacro %}
 
+{% block action_menu %}
+    {{ knp_menu_render(admin.actionMenu(action, object|default(null)), {
+        'currentClass' : 'active',
+        'template': sonata_admin.adminPool.getTemplate('tab_menu_template')
+    }, 'twig') }}
+{% endblock %}
+
 {% block tab_menu %}
     {% include 'SonataAdminBundle:CRUD:list_tab_menu.html.twig' with {
         'mode':   'tree',

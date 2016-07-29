@@ -359,21 +359,16 @@ You can add custom items to the actions menu for a specific action by overriding
 
 .. code-block:: php
 
-    public function configureActionButtons($action, $object = null)
+    class DeliveryAdmin extends AbstractAdmin
     {
-        $list = parent::configureActionButtons($action, $object);
-
-        if (in_array($action, array('show', 'edit', 'acl')) && $object) {
-            $list['custom'] = array(
-                'template' => 'AppBundle:Button:custom_button.html.twig',
-            );
+        protected function configureActionMenu(MenuItemInterface $menu, $action, $object = null)
+        {
+            if ($action == 'edit') {
+                $menu->addChild('New sending', array('uri' => $this->generateUrl('sending', array(
+                    'id' => $object->getId(),
+                ))));
+            }
         }
-
-        // Remove history action
-        unset($list['history']);
-
-        return $list;
-    }
 
 
 .. figure:: ../images/custom_action_buttons.png
